@@ -163,7 +163,7 @@ def load_word_list(filename="words_alpha.txt"):
             for line in f:
                 word = line.strip().lower()
                 
-                if word.isalpha() and len(word) > 0:
+                if word.isalpha() and len(word) > 1:
                     words.append(word)
             if not words:
                 print(f"⚠️  No valid words found in {filename}. Using default word list.")
