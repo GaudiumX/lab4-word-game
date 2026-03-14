@@ -1,4 +1,5 @@
-"""Core state helper for the Hangman-style game.
+"""
+Core state helper for the Hangman-style game.
 
 Provides a single pure helper `update_game_state(...)` used by the
 game loop to process one letter guess. Key guarantees:
@@ -12,6 +13,11 @@ game loop to process one letter guess. Key guarantees:
 Example:
         new_guessed, new_lives = update_game_state('apple', ['a'], 'p', 6)
 """
+
+import random
+import sys
+
+
 
 def update_game_state(secret_word: str, guessed_letters: list[str], guess: str, lives: int) -> tuple[list[str], int]:
     """
@@ -30,34 +36,162 @@ def update_game_state(secret_word: str, guessed_letters: list[str], guess: str, 
     Notes:
     - Invalid guesses are ignored without penalty.
     """
-    # Keep invariants intact even if caller sends bad inputs.
+    
     safe_lives = max(0, lives)
 
-    # ----- Defensive checks -----
-    # Normalize and validate guess.
+    
     guess = guess.strip().lower()
     if len(guess) != 1 or not (guess.isalpha() and guess.isascii()):
         return sorted(guessed_letters.copy()), safe_lives
 
-    # ----- Duplicate check -----
-    # Convert guessed_letters to a set for O(1) lookup
+    
     guessed_set = set(guessed_letters)
     if guess in guessed_set:
-        # No change: return a sorted copy and unchanged (clamped) lives.
+        
         return sorted(guessed_letters.copy()), safe_lives
 
-    # ----- Add new guess -----
-    # Create new list with the guess appended (order preserved)
+    
     new_guessed = guessed_letters.copy()
     new_guessed.append(guess)
 
-    # ----- Update lives -----
+    
     if guess in secret_word.lower():
         new_lives = safe_lives
     else:
         new_lives = max(0, safe_lives - 1)
 
-    # (Optional) sort the list for consistent display – you can do this here or in UI
+    
     new_guessed.sort()
 
     return new_guessed, new_lives
+
+
+
+
+def build_display_word(secret_word: str, guessed_letters: list[str]) -> str:
+    """Return a string showing guessed letters and underscores for the rest."""
+    return ''.join(letter if letter in guessed_letters else '_' for letter in secret_word)
+
+
+def is_word_guessed(secret_word: str, guessed_letters: list[str]) -> bool:
+    """Return True if all letters of the secret word have been guessed."""
+    return all(letter in guessed_letters for letter in secret_word)
+
+
+def get_valid_guess(guessed_letters: list[str]) -> str:
+    """
+    Prompt the user until a valid single lowercase letter is entered.
+    Validation ensures:
+    - Exactly one character
+    - Alphabetic (a‑z)
+    - Not already guessed
+    """
+    while True:
+        raw = input("Guess a letter: ").strip()
+        if len(raw) != 1:
+            print("❌ Please enter exactly one character.")
+            continue
+        if not raw.isalpha():
+            print("❌ Please enter a letter (a-z).")
+            continue
+        guess = raw.lower()
+        if guess in guessed_letters:
+            print(f"⏳ You already guessed '{guess}'. Try a different letter.")
+            continue
+        return guess
+
+
+def display_game(secret_word: str, guessed_letters: list[str], lives_left: int, max_lives: int):
+    """Print the current game state (UI)."""
+    print("\n" + "=" * 40)
+    print(f"Word:   {build_display_word(secret_word, guessed_letters)}")
+    print(f"Guessed: {', '.join(sorted(guessed_letters)) if guessed_letters else '(none)'}")
+    print(f"Lives:   {'❤️ ' * lives_left}{'🖤 ' * (max_lives - lives_left)} ({lives_left}/{max_lives})")
+    print("=" * 40)
+
+
+
+
+def play_game(word_list: list[str], max_lives: int = 6):
+    """Run one full game session (may include multiple rounds)."""
+    state = "START"          
+
+    while state != "EXIT":
+        if state == "START":
+            
+            secret_word = random.choice(word_list)
+            guessed_letters = []
+            lives_left = max_lives
+            state = "PLAYING"
+            print("\n🎮 NEW GAME – Guess the word!")
+
+        elif state == "PLAYING":
+            
+            display_game(secret_word, guessed_letters, lives_left, max_lives)
+
+            
+            guess = get_valid_guess(guessed_letters)
+
+            
+            guessed_letters, lives_left = update_game_state(
+                secret_word, guessed_letters, guess, lives_left
+            )
+
+            
+            if is_word_guessed(secret_word, guessed_letters):
+                state = "WON"
+            elif lives_left <= 0:
+                state = "LOST"
+
+        elif state == "WON":
+            display_game(secret_word, guessed_letters, lives_left, max_lives)
+            print("🎉 CONGRATULATIONS! You guessed the word!")
+            state = "REPLAY"
+
+        elif state == "LOST":
+            display_game(secret_word, guessed_letters, lives_left, max_lives)
+            print(f"💀 GAME OVER – The word was '{secret_word}'.")
+            state = "REPLAY"
+
+        elif state == "REPLAY":
+            answer = input("\nPlay again? (y/n): ").strip().lower()
+            if answer == 'y' or answer == 'yes':
+                state = "START"
+            else:
+                state = "EXIT"
+                print("👋 Thanks for playing!")
+
+def load_word_list(filename="words_alpha.txt"):
+    """
+    Load words from a text file.
+    Expected format: one word per line, lowercase, alphabetic only.
+    Returns a list of valid words. If file not found or empty, falls back to a default list.
+    """
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            words = []
+            for line in f:
+                word = line.strip().lower()
+                # Keep only alphabetic words (no hyphens, spaces, etc.) with at least 2 letters
+                if word.isalpha() and len(word) > 1:
+                    words.append(word)
+            if not words:
+                print(f"⚠️  No valid words found in {filename}. Using default word list.")
+                return ["python", "java", "kotlin", "swift", "rust", "go", "typescript"]
+            return words
+    except FileNotFoundError:
+        print(f"⚠️  Word list file '{filename}' not found. Using default word list.")
+        return ["python", "java", "kotlin", "swift", "rust", "go", "typescript"]
+
+
+
+if __name__ == "__main__":
+    # You can change the filename here or pass it as a command-line argument
+    word_file = "words_alpha.txt"
+    if len(sys.argv) > 1:
+        word_file = sys.argv[1]
+
+    word_list = load_word_list(word_file)
+    print("🐍 WELCOME TO GUESS THE WORD (Hangman style)")
+    print(f"Loaded {len(word_list)} words from {word_file}")
+    play_game(word_list, max_lives=6)
