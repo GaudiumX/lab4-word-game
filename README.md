@@ -1,7 +1,8 @@
 # Guess The Word Game
 
 A console-based Hangman-style word guessing game written in Python.  
-The computer randomly selects a word, and the player guesses letters one at a time.
+The computer randomly selects a word from a staggering asemblage of over 300000 words, and the player guesses letters one at a time.  
+The game tracks guessed letters, remaining lives, and displays the masked word.
 
 ## Features
 
@@ -14,7 +15,10 @@ The computer randomly selects a word, and the player guesses letters one at a ti
 
 ## How to Run
 
-1. Make sure you have **Python 3.8+** installed.
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/lab4-word-game.git
+1. Make sure you have **Python 3.8 or higher** installed.
+2. Clone or download this repository.
+3. Open a terminal in the project folder.
+4. Run the game:
+
+```bash
+python main.py
