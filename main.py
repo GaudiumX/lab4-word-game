@@ -69,23 +69,17 @@ def update_game_state(secret_word: str, guessed_letters: list[str], guess: str, 
 
 
 def build_display_word(secret_word: str, guessed_letters: list[str]) -> str:
-    """Return a string showing guessed letters and underscores for the rest."""
+    
     return ''.join(letter if letter in guessed_letters else '_' for letter in secret_word)
 
 
 def is_word_guessed(secret_word: str, guessed_letters: list[str]) -> bool:
-    """Return True if all letters of the secret word have been guessed."""
+    
     return all(letter in guessed_letters for letter in secret_word)
 
 
 def get_valid_guess(guessed_letters: list[str]) -> str:
-    """
-    Prompt the user until a valid single lowercase letter is entered.
-    Validation ensures:
-    - Exactly one character
-    - Alphabetic (a‑z)
-    - Not already guessed
-    """
+    
     while True:
         raw = input("Guess a letter: ").strip()
         if len(raw) != 1:
@@ -102,7 +96,7 @@ def get_valid_guess(guessed_letters: list[str]) -> str:
 
 
 def display_game(secret_word: str, guessed_letters: list[str], lives_left: int, max_lives: int):
-    """Print the current game state (UI)."""
+    
     print("\n" + "=" * 40)
     print(f"Word:   {build_display_word(secret_word, guessed_letters)}")
     print(f"Guessed: {', '.join(sorted(guessed_letters)) if guessed_letters else '(none)'}")
@@ -113,7 +107,7 @@ def display_game(secret_word: str, guessed_letters: list[str], lives_left: int, 
 
 
 def play_game(word_list: list[str], max_lives: int = 6):
-    """Run one full game session (may include multiple rounds)."""
+    
     state = "START"          
 
     while state != "EXIT":
@@ -162,18 +156,14 @@ def play_game(word_list: list[str], max_lives: int = 6):
                 print("👋 Thanks for playing!")
 
 def load_word_list(filename="words_alpha.txt"):
-    """
-    Load words from a text file.
-    Expected format: one word per line, lowercase, alphabetic only.
-    Returns a list of valid words. If file not found or empty, falls back to a default list.
-    """
+    
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             words = []
             for line in f:
                 word = line.strip().lower()
-                # Keep only alphabetic words (no hyphens, spaces, etc.) with at least 2 letters
-                if word.isalpha() and len(word) > 1:
+                
+                if word.isalpha() and len(word) > 0:
                     words.append(word)
             if not words:
                 print(f"⚠️  No valid words found in {filename}. Using default word list.")
@@ -186,7 +176,7 @@ def load_word_list(filename="words_alpha.txt"):
 
 
 if __name__ == "__main__":
-    # You can change the filename here or pass it as a command-line argument
+    
     word_file = "words_alpha.txt"
     if len(sys.argv) > 1:
         word_file = sys.argv[1]
