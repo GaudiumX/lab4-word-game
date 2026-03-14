@@ -1,7 +1,7 @@
 # Guess The Word Game
 
 A console-based Hangman-style word guessing game written in Python.  
-The computer randomly selects a word from a staggering asemblage of over 300000 words, and the player guesses letters one at a time.  
+The computer randomly selects a word from a staggering assemblage of over 300000 words, and the player guesses letters one at a time.  
 The game tracks guessed letters, remaining lives, and displays the masked word.
 
 ## Features
